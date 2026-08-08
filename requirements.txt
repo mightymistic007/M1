@@ -1,0 +1,10 @@
+pandas
+numpy
+xgboost
+scipy
+pulp
+jupyter
+matplotlib
+seaborn
+
+

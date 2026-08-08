@@ -1,0 +1,15 @@
+# Python / Jupyter
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Data files (keep raw/processed heavy data local)
+data/raw/*
+data/processed/*
+!.gitkeep
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
