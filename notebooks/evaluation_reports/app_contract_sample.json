@@ -1,0 +1,70 @@
+[
+  {
+    "shipment_id": "SHIP-1000",
+    "predicted_delay_risk": 0.8118239641189575,
+    "initial_delay_estimate_days": 5,
+    "prescribed_options": [
+      {
+        "option_id": "OPT-A",
+        "name": "Air Freight Expedited",
+        "cost_usd": 260.96,
+        "net_cost_increase_usd": 80.99,
+        "days_delayed_mitigated": 4,
+        "final_estimated_delay": 1,
+        "tradeoff": "Eliminates up to 4 delay days with a 45% expedite fee."
+      },
+      {
+        "option_id": "OPT-B",
+        "name": "Alternate Regional Supplier",
+        "cost_usd": 206.97,
+        "net_cost_increase_usd": 27.0,
+        "days_delayed_mitigated": 2,
+        "final_estimated_delay": 3,
+        "tradeoff": "Recovers 2 delay days at a 15% procurement premium."
+      },
+      {
+        "option_id": "OPT-C",
+        "name": "Accept Delay & Reallocate Buffer",
+        "cost_usd": 179.9700012,
+        "net_cost_increase_usd": 0.0,
+        "days_delayed_mitigated": 0,
+        "final_estimated_delay": 5,
+        "tradeoff": "Zero additional cost; absorbs the full 5-day delay."
+      }
+    ]
+  },
+  {
+    "shipment_id": "SHIP-1001",
+    "predicted_delay_risk": 0.4370785057544708,
+    "initial_delay_estimate_days": 0,
+    "prescribed_options": [
+      {
+        "option_id": "OPT-A",
+        "name": "Air Freight Expedited",
+        "cost_usd": 579.97,
+        "net_cost_increase_usd": 179.99,
+        "days_delayed_mitigated": 0,
+        "final_estimated_delay": 0,
+        "tradeoff": "Eliminates up to 0 delay days with a 45% expedite fee."
+      },
+      {
+        "option_id": "OPT-B",
+        "name": "Alternate Regional Supplier",
+        "cost_usd": 459.98,
+        "net_cost_increase_usd": 60.0,
+        "days_delayed_mitigated": 0,
+        "final_estimated_delay": 0,
+        "tradeoff": "Recovers 0 delay days at a 15% procurement premium."
+      },
+      {
+        "option_id": "OPT-C",
+        "name": "Accept Delay & Reallocate Buffer",
+        "cost_usd": 399.980011,
+        "net_cost_increase_usd": 0.0,
+        "days_delayed_mitigated": 0,
+        "final_estimated_delay": 0,
+        "tradeoff": "Zero additional cost; absorbs the full 0-day delay."
+      }
+    ]
+  }
+]
