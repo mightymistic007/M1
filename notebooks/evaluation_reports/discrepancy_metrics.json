@@ -1,0 +1,30 @@
+{
+    "total_evaluated_shipments": 200,
+    "cost_metrics": {
+        "mean_cost_discrepancy_usd": 3.22,
+        "mean_absolute_error_cost_usd": 4.72,
+        "mean_cost_percentage_error": 2.05
+    },
+    "delay_metrics": {
+        "mean_delay_discrepancy_days": 0.32,
+        "mean_absolute_error_delay_days": 0.45,
+        "underestimated_delay_frequency_pct": 28.0
+    },
+    "breakdown_by_option": {
+        "Accept Delay & Reallocate Buffer": {
+            "total_cases": 135,
+            "avg_cost_delta_usd": 2.6,
+            "avg_delay_delta_days": 0.34
+        },
+        "Air Freight Expedited": {
+            "total_cases": 34,
+            "avg_cost_delta_usd": 4.12,
+            "avg_delay_delta_days": 0.15
+        },
+        "Alternate Regional Supplier": {
+            "total_cases": 31,
+            "avg_cost_delta_usd": 4.97,
+            "avg_delay_delta_days": 0.42
+        }
+    }
+}
