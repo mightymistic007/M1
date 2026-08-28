@@ -1,0 +1,20 @@
+{
+    "timestamp_evaluated": "2026-08-28T10:00:00Z",
+    "retraining_required": true,
+    "triggers_activated": {
+        "cost_drift": false,
+        "delay_duration_drift": false,
+        "high_underestimate_frequency": true
+    },
+    "observed_metrics": {
+        "cost_percentage_error": 2.05,
+        "delay_mae_days": 0.45,
+        "underestimated_delay_rate_pct": 28.0
+    },
+    "thresholds_configured": {
+        "max_acceptable_delay_mae_days": 1.25,
+        "max_acceptable_cost_pct_error": 6.0,
+        "max_acceptable_underestimate_rate_pct": 25.0
+    },
+    "recommended_action": "TRIGGER_AUTOMATED_RETRAIN"
+}
