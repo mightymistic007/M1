@@ -1,0 +1,10 @@
+{
+    "timestamp_retrained": "2026-08-30T16:00:00Z",
+    "status": "SUCCESS",
+    "samples_trained": 144415,
+    "post_retrain_metrics": {
+        "accuracy": 69.52,
+        "roc_auc": 0.7474
+    },
+    "model_artifact": "models\\retrained_xgboost.json"
+}
