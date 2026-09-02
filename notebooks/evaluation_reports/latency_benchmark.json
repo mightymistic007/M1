@@ -1,0 +1,27 @@
+[
+    {
+        "batch_size": 1,
+        "total_latency_ms": 19.44,
+        "latency_per_record_ms": 19.4358
+    },
+    {
+        "batch_size": 10,
+        "total_latency_ms": 19.72,
+        "latency_per_record_ms": 1.9716
+    },
+    {
+        "batch_size": 50,
+        "total_latency_ms": 27.63,
+        "latency_per_record_ms": 0.5526
+    },
+    {
+        "batch_size": 100,
+        "total_latency_ms": 40.01,
+        "latency_per_record_ms": 0.4001
+    },
+    {
+        "batch_size": 500,
+        "total_latency_ms": 123.59,
+        "latency_per_record_ms": 0.2472
+    }
+]
