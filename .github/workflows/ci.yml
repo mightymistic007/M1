@@ -10,18 +10,68 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install scikit-learn xgboost pandas numpy fastapi uvicorn
+
+      - name: Setup CI Environment Fixtures
+        run: |
+          mkdir -p data/processed models notebooks/evaluation_reports
+          python -c "
+          import os, json, pandas as pd
+          import xgboost as xgb
+
+          # 1. Ensure solver constraints exist
+          config_path = 'data/processed/solver_constraints_config.json'
+          if not os.path.exists(config_path):
+              with open(config_path, 'w') as f:
+                  json.dump({
+                      'budget_baseline_usd': 203.77,
+                      'max_historical_delay_days': 6,
+                      'prescriptive_options': {
+                          'air_freight': {'expedite_cost_multiplier': 1.45, 'days_saved': 4},
+                          'alternate_supplier': {'cost_premium_rate': 1.15, 'days_saved': 2},
+                          'standard_delay': {'cost_premium_rate': 1.0, 'days_saved': 0}
+                      }
+                  }, f)
+
+          # 2. Ensure test.csv and train.csv exist for test harness
+          cols = ['shipping_mode','type','market','order_region','customer_segment',
+                  'category_name','days_for_shipment_scheduled','order_item_quantity',
+                  'order_item_product_price','sales','is_delayed','order_item_id']
+          sample_data = [[1, 0, 2, 3, 1, 5, 4, 1, 100.0, 100.0, 0, 'SHIP-1001']] * 15
+          df_dummy = pd.DataFrame(sample_data, columns=cols)
+          
+          for path in ['data/processed/test.csv', 'data/processed/train.csv']:
+              if not os.path.exists(path):
+                  df_dummy.to_csv(path, index=False)
+
+          # 3. Ensure improved & retrained model artifacts exist
+          X = df_dummy[['shipping_mode','type','market','order_region','customer_segment',
+                        'category_name','days_for_shipment_scheduled','order_item_quantity',
+                        'order_item_product_price','sales']]
+          y = df_dummy['is_delayed']
+          dummy_model = xgb.XGBClassifier(n_estimators=2, max_depth=2)
+          dummy_model.fit(X, y)
+
+          for m_path in ['models/improved_xgboost.json', 'models/retrained_xgboost.json']:
+              if not os.path.exists(m_path):
+                  dummy_model.save_model(m_path)
+          "
 
       - name: Run automated test suite
+        env:
+          PYTHONPATH: .
         run: |
           python -m unittest discover tests/
