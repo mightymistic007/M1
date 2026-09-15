@@ -28,18 +28,33 @@ class M4PipelineBridge:
         if df_records.empty:
             return []
 
-        # Ensure required numerical feature columns exist
+        df = df_records.copy()
+
+        # Handle fallback for sales if missing
+        if "sales" not in df.columns:
+            if "order_item_product_price" in df.columns:
+                qty = df["order_item_quantity"] if "order_item_quantity" in df.columns else 1
+                df["sales"] = df["order_item_product_price"] * qty
+            else:
+                df["sales"] = self.solver.config.get("budget_baseline_usd", 203.77)
+
+        # Standard required feature columns for the XGBoost model
         feature_cols = [
             "shipping_mode", "type", "market", "order_region", "customer_segment",
             "category_name", "days_for_shipment_scheduled", "order_item_quantity",
             "order_item_product_price", "sales"
         ]
-        
-        X = df_records[feature_cols].copy()
+
+        # Ensure all required features exist with sensible neutral defaults
+        for col in feature_cols:
+            if col not in df.columns:
+                df[col] = 0
+
+        X = df[feature_cols].copy()
         pred_probs = self.model.predict_proba(X)[:, 1]
 
         shipment_candidates = []
-        for idx, (_, row) in enumerate(df_records.iterrows()):
+        for idx, (_, row) in enumerate(df.iterrows()):
             prob = float(pred_probs[idx])
             estimated_delay = int(round(prob * self.max_delay_days))
             order_val = float(row.get("sales", row.get("order_item_product_price", self.solver.config["budget_baseline_usd"])))
