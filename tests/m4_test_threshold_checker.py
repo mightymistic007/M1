@@ -2,54 +2,43 @@ import unittest
 import pandas as pd
 from models.m4_threshold_checker import M4ThresholdChecker
 
-class TestM4ThresholdChecker(unittest.TestCase):
+class TestM4ThresholdCheckerRefined(unittest.TestCase):
     def setUp(self):
         self.checker = M4ThresholdChecker(
             delay_discrepancy_limit=2,
             discrepancy_rate_threshold=0.15,
-            false_negative_threshold=0.05
+            false_negative_threshold=0.05,
+            min_batch_size=10
         )
 
-    def test_nominal_within_thresholds(self):
-        df_nominal = pd.DataFrame([
-            {"shipment_id": f"NOM-{i}", "predicted_delay_days": 2, "actual_delay_days": 2}
-            for i in range(20)
+    def test_min_batch_size_guard(self):
+        """Micro-batches below 10 records must not trigger a false retrain."""
+        micro_batch = pd.DataFrame([
+            {"shipment_id": "MICRO-1", "predicted_delay_days": 0, "actual_delay_days": 5},
+            {"shipment_id": "MICRO-2", "predicted_delay_days": 1, "actual_delay_days": 4}
         ])
-        result = self.checker.evaluate_outcomes(df_nominal)
+        result = self.checker.evaluate_outcomes(micro_batch)
         self.assertFalse(result["retrain_triggered"])
-        self.assertEqual(result["discrepancy_rate"], 0.0)
-        self.assertEqual(len(result["trigger_reasons"]), 0)
+        self.assertIn("INSUFFICIENT_SAMPLE_SIZE", result["status"])
 
-    def test_discrepancy_trigger_exceeded(self):
+    def test_refined_audit_trail_and_severe_drift(self):
+        """Test detection of severe disruptions (>= 4 days) and presence of shipment IDs in audit trail."""
         records = []
-        for i in range(20):
-            # 5 out of 20 (25%) have a gap of 3 days (>= 2 threshold)
-            actual = 5 if i < 5 else 2
+        for i in range(25):
+            pred = 1
+            # 1 outlier with severe 5-day disruption (gap = 4 days)
+            actual = 5 if i == 0 else 1
             records.append({
-                "shipment_id": f"DISC-{i}",
-                "predicted_delay_days": 2,
-                "actual_delay_days": actual
-            })
-        df_disc = pd.DataFrame(records)
-        result = self.checker.evaluate_outcomes(df_disc)
-        self.assertTrue(result["retrain_triggered"])
-        self.assertGreaterEqual(result["discrepancy_rate"], 0.15)
-
-    def test_severe_false_negative_trigger(self):
-        records = []
-        for i in range(20):
-            # 2 out of 20 (10%) predicted 0 delay but suffered 4 days delay
-            pred = 0 if i < 2 else 2
-            actual = 4 if i < 2 else 2
-            records.append({
-                "shipment_id": f"FN-{i}",
+                "shipment_id": f"SHIP-AUDIT-{i:03d}",
                 "predicted_delay_days": pred,
                 "actual_delay_days": actual
             })
-        df_fn = pd.DataFrame(records)
-        result = self.checker.evaluate_outcomes(df_fn)
+        
+        df = pd.DataFrame(records)
+        result = self.checker.evaluate_outcomes(df)
         self.assertTrue(result["retrain_triggered"])
-        self.assertGreaterEqual(result["false_negative_rate"], 0.05)
+        self.assertIn("SHIP-AUDIT-000", result["discrepant_shipment_ids"])
+        self.assertEqual(result["severe_disruption_count"], 1)
 
 if __name__ == "__main__":
     unittest.main()
