@@ -10,6 +10,7 @@ DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "pro
 class M4OptimizationSolver:
     def __init__(self, config_path: str = DEFAULT_CONFIG_PATH):
         self.config = self._load_config(config_path)
+        self.max_cap = float(self.config.get("budget_cap_usd", 399.98))
 
     def _load_config(self, path: str) -> Dict[str, Any]:
         cfg = {
@@ -28,7 +29,6 @@ class M4OptimizationSolver:
             except Exception:
                 pass
 
-        # Normalize penalty rate key across naming variations
         if "delay_penalty_per_day_usd" not in cfg:
             cfg["delay_penalty_per_day_usd"] = cfg.get(
                 "sla_penalty_rate_per_day",
@@ -38,10 +38,8 @@ class M4OptimizationSolver:
         return cfg
 
     def _sanitize_record(self, record: Dict[str, Any], idx: int) -> Dict[str, Any]:
-        """Edge-case sanitization for dirty or abnormal input fields."""
         shipment_id = str(record.get("shipment_id", f"SHIP-DEF-{idx:04d}"))
         
-        # Order Value sanitization
         raw_val = record.get("order_value_usd", self.config.get("budget_baseline_usd", 203.77))
         try:
             val = float(raw_val) if raw_val is not None else float(self.config.get("budget_baseline_usd", 203.77))
@@ -49,15 +47,13 @@ class M4OptimizationSolver:
         except (ValueError, TypeError):
             val = float(self.config.get("budget_baseline_usd", 203.77))
 
-        # Delay sanitization
-        raw_delay = record.get("estimated_delay_days", 0)
+        raw_delay = record.get("estimated_delay_days", record.get("initial_delay_estimate_days", 0))
         try:
             delay = int(round(float(raw_delay)))
             delay = max(0, min(delay, self.config.get("max_historical_delay_days", 6)))
         except (ValueError, TypeError):
             delay = 0
 
-        # Delay Risk sanitization
         raw_risk = record.get("predicted_delay_risk", 0.0)
         try:
             risk = float(raw_risk) if raw_risk is not None else 0.0
@@ -73,20 +69,14 @@ class M4OptimizationSolver:
         }
 
     def solve_batch(self, batch_records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """
-        Solves LP assignment across 3 candidate options:
-        - OPT-A: Air Expedited (Cost +45%, -4 delay days)
-        - OPT-B: Regional Carrier (Cost +15%, -2 delay days)
-        - OPT-C: Standard Ground (Cost +0%, 0 delay days mitigated)
-        """
         if not batch_records:
             return []
 
         clean_batch = [self._sanitize_record(rec, idx) for idx, rec in enumerate(batch_records)]
         N = len(clean_batch)
 
-        penalty_rate = self.config.get("delay_penalty_per_day_usd", 45.0)
-        budget_cap = self.config.get("budget_cap_usd", 399.98)
+        penalty_rate = float(self.config.get("delay_penalty_per_day_usd", 45.0))
+        budget_cap = float(self.config.get("budget_cap_usd", 399.98))
 
         cap_a = max(1, math.ceil(self.config.get("option_a_capacity_pct", 0.20) * N))
         cap_b = max(1, math.ceil(self.config.get("option_b_capacity_pct", 0.35) * N))
@@ -106,25 +96,21 @@ class M4OptimizationSolver:
                 residual_delay = max(0, d - opt["mitigate"])
                 penalty_cost = residual_delay * penalty_rate
                 
-                # Budget cap infeasibility penalty
-                if direct_cost > budget_cap:
-                    penalty_cost += 1e6
+                if opt["id"] != "OPT-C" and direct_cost > budget_cap:
+                    penalty_cost += 1e7
 
-                # Objective: minimize (direct cost increase + delay penalty)
                 c_obj.append((v * opt["cost_pct"]) + penalty_cost)
 
-        # Equality constraint: exactly one option chosen per shipment
         A_eq = np.zeros((N, 3 * N))
         b_eq = np.ones(N)
         for i in range(N):
             A_eq[i, i * 3 : (i + 1) * 3] = 1.0
 
-        # Capacity inequality: sum(x_A) <= cap_a, sum(x_B) <= cap_b
         A_ub = np.zeros((2, 3 * N))
         b_ub = np.array([cap_a, cap_b])
         for i in range(N):
-            A_ub[0, i * 3] = 1.0       # Option A
-            A_ub[1, i * 3 + 1] = 1.0   # Option B
+            A_ub[0, i * 3] = 1.0
+            A_ub[1, i * 3 + 1] = 1.0
 
         bounds = [(0, 1) for _ in range(3 * N)]
         res = linprog(c=c_obj, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method="highs")
@@ -163,6 +149,8 @@ class M4OptimizationSolver:
             output.append({
                 "shipment_id": rec["shipment_id"],
                 "original_estimated_delay": d,
+                "initial_delay_estimate_days": d,
+                "predicted_delay_risk": rec["predicted_delay_risk"],
                 "prescribed_options": opt_cards
             })
 
