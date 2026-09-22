@@ -119,9 +119,6 @@
 ## Running the Pipeline & Tests
 
 ```bash
-## Running the Pipeline & Tests
-
-```bash
 # 1. Run core predictive pipeline unit tests (M1)
 python -m unittest tests/test_pipeline.py
 
