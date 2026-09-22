@@ -54,6 +54,29 @@
 * **Day 27 (Continuous Retraining Documentation)**: Authored comprehensive documentation detailing continuous learning architecture, trigger criteria, and model governance lifecycles.
 * **Day 28 (End-to-End Pipeline Integration Verification)**: Led integration tests coordinating model predictions, feature engineering, and closed-loop feedback triggers.
 * **Day 29 (Final Review & Repository Consolidation)**: Compiled technical presentation dossiers, verified all test suites passed cleanly, and finalized code consolidation into `main`.
+
+* ### Week 3 — Closed-Loop Design & Retraining Trigger Logic (Aug 23 – Aug 29)
+
+* **Days 16–17 (Retraining Architecture & Trigger Specifications)**: Designed the closed-loop retraining pipeline criteria, establishing error thresholds for model drift (flagging batches where discrepancy rates exceed 15% or severe false negatives exceed 5%).
+* **Days 18–19 (Trigger Implementation & Discrepancy Auditing)**: Built and verified the retraining trigger core logic to continuously evaluate realized delivery actuals against initial XGBoost predictions.
+* **Days 20–21 (Pipeline Integration & Drift Verification)**: Implemented automated unit and integration tests asserting that edge-case prediction failures and operational drift correctly initiate the retraining sequence.
+* **Day 22 (Write-Back Data Ingestion & Contract Alignment)**: Coordinated with downstream services to standardize the delivery telemetry write-back schema, ensuring actual delivery durations feed back into the retraining dataset without schema mismatches.
+* **M4 Add-on Collaboration (Mathematical Constraints & Schema Specs)**:
+  * Formulated the canonical LP objective function balancing carrier surcharges against SLA delay penalties ($45/day) under strict capacity limits (Option A $\le 20\%$, Option B $\le 35\%$).
+  * Built `models/m4_threshold_checker.py` and `models/m4_retrain_trigger_skeleton.py` to operationalize batch drift auditing and candidate retraining gates.
+  * Authored `docs/m4_json_schema_contract.md` and `docs/m4_app_writeback_schema_sync.md` to lock in JSON Draft-07 compliance with the Application Team.
+
+### Week 4 — End-to-End Retraining, Production Hardening & Final Merge (Aug 30 – Sep 5)
+
+* **Day 23 (Retraining Logic Finalization & Execution Guide)**: Completed the end-to-end retraining orchestration runner and documented operational execution flows for automated model updates.
+* **Days 24–25 (Retraining Pipeline Testing & Edge-Case Hardening)**: Validated the end-to-end retraining flow (ingestion → evaluation → candidate model fitting → performance gate check), hardening feature pipelines against null or corrupt operational telemetry.
+* **Day 26 (Performance & Scalability Benchmarking)**: Benchmarked inference latency and retraining data aggregation to verify stable execution under operational batch loads.
+* **Day 27 (Continuous Retraining Documentation)**: Authored comprehensive technical documentation covering the end-to-end ML lifecycle, drift thresholds, and model promotion criteria.
+* **Days 28–29 (Integration Testing & Final Review Consolidation)**: Executed full-loop integration tests with live-style telemetry payloads, verified test coverage across all suites, and merged the finalized pipeline into `main` for the final review milestone.
+* **M4 Add-on Collaboration (HiGHS Solver Hardening & E2E Integration)**:
+  * Hardened the prescriptive solver (`models/m4_optimization_solver.py`) against borderline $399.98 budget caps and defensive input sanitization (corrupt/null fields, zero-delay shipments).
+  * Executed performance scaling benchmarks in `tests/m4_test_solver_performance.py`, proving sub-150ms execution times for stress batches of $N=500$ records.
+  * Coordinated and delivered full-loop integration testing in `tests/m4_test_app_team_e2e_integration.py` and consolidated presentation materials in `docs/m4_final_review_presentation_materials.md`.
 ---
 
 ## Artifacts Created
