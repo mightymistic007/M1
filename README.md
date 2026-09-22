@@ -119,9 +119,20 @@
 ## Running the Pipeline & Tests
 
 ```bash
-# 1. Run full unit test suite
+## Running the Pipeline & Tests
+
+```bash
+# 1. Run core predictive pipeline unit tests (M1)
 python -m unittest tests/test_pipeline.py
 
-# 2. Run end-to-end model prediction to prescriptive solver execution
-python models/prescriptive_solver.py
-```
+# 2. Run model-to-solver inference and ranking bridge
+python models/m4_pipeline_bridge.py
+
+# 3. Execute closed-loop retraining evaluation runner (CLI audit)
+python models/m4_retrain_trigger_runner.py
+
+# 4. Run full prescriptive optimization & closed-loop test discovery (33 tests)
+python -m unittest discover -s tests -p "m4_*.py"
+
+# 5. Execute end-to-end integration suite with Application Team contracts
+python -m unittest tests/m4_test_app_team_e2e_integration.py
