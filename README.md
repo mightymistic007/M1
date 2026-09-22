@@ -80,13 +80,40 @@
 ---
 
 ## Artifacts Created
+## Artifacts Created
 
-* **Data Pipelines**: `data/load_data.py`, `data/clean_data.py`, `data/feature_engineering.py`, `data/extract_solver_ranges.py`
-* **Datasets**: `data/processed/cleaned_supply_chain_data.csv`, `train.csv`, `test.csv`, `solver_constraints_config.json`
-* **Models & Inference**: `models/train_baseline.py`, `models/tune_model.py`, `models/cross_validate.py`, `models/pipeline.py`, `models/prescriptive_solver.py`
-* **Reports & Diagnostics**: `notebooks/plots/`, `notebooks/evaluation_reports/` (`confusion_matrix.png`, `roc_curve.png`, `feature_importance.png`, `cv_metrics.json`, `app_contract_sample.json`)
-* **Test Suite**: `tests/test_pipeline.py`
+### M1 Track — Predictive Pipeline & Retraining Foundation
+* **Model Artifacts & Training**:
+  * `models/improved_xgboost.json` — Hyperparameter-tuned XGBoost delay classification model.
+  * `models/model_baseline.py` & `models/model_improved.py` — Baseline and optimized training pipelines with cross-validation.
+* **Pipeline & Evaluation**:
+  * `models/m4_pipeline_bridge.py` — Model-to-solver transformation layer mapping risk probabilities to optimization inputs.
+  * `models/m4_retrain_trigger_runner.py` — CLI and programmatic runner executing end-to-end drift evaluation and retraining trigger routines.
+  * `models/m4_debug_drift_inspector.py` — Diagnostics tool for inspecting classification drift, edge-case discrepancies, and false negative spikes.
+* **M1 Test Suites**:
+  * `tests/test_pipeline.py` & `tests/test_features.py` — Automated verification of feature engineering and inference data contracts.
+  * `tests/m4_test_pipeline_bridge.py` — Integration test for end-to-end predictive feature transformation.
 
+---
+
+### M4 Add-on Track — Prescriptive Optimization & Closed-Loop Feedback
+* **Optimization & Ingestion Engines**:
+  * `models/m4_optimization_solver.py` — SciPy HiGHS LP prescriptive solver assigning candidate mitigation tiers (Air Expedited, Regional Fast-Track, Standard Ground) subject to budget caps ($399.98) and capacity limits.
+  * `models/m4_threshold_checker.py` — Operational drift auditor monitoring discrepancy rates, high-penalty false negatives, and financial drift.
+  * `models/m4_retrain_trigger_skeleton.py` — Lifecycle orchestrator managing outcome aggregation, feature transformation, and candidate model promotion gates.
+  * `models/m4_validate_writeback_payload.py` — Schema validation engine ensuring App Team write-back payloads adhere to delivery telemetry contracts.
+  * `models/m4_validate_json_contract.py` — JSON Draft-07 compliance validator for outgoing prescription payloads.
+* **Configuration & Ranges**:
+  * `data/processed/solver_constraints_config.json` — Canonical constraints configuration (capacity ratios, baseline costs, delay penalty multipliers).
+  * `models/m4_extract_data_ranges.py` — Utility script extracting empirical budget bounds and historical delay maximums.
+* **System Documentation (`docs/`)**:
+  * `docs/m4_closed_loop_retraining_architecture.md` — Complete closed-loop operational lifecycle and continuous training architecture.
+  * `docs/m4_json_schema_contract.md` & `docs/m4_app_writeback_schema_sync.md` — Dual interface schema specifications aligned with the Application Team.
+  * `docs/m4_mathematical_constraints.md` & `docs/m4_objective_formulation.md` — Mathematical formulation of the LP objective and constraint equations.
+  * `docs/m4_retraining_trigger_guide.md` — Operational playbook and CLI trigger documentation.
+  * `docs/m4_final_review_presentation_materials.md` — Comprehensive project review briefing, architecture diagrams, and benchmark scorecards.
+* **M4 Test Suites (`tests/`)**:
+  * Full 33-test automated test suite covering unit logic (`m4_test_pipeline_unit.py`), mathematical constraints (`m4_test_constraint_harness.py`), edge-case sanitization (`m4_test_solver_edge_cases.py`), tuning boundaries (`m4_test_solver_tuning.py`), batch scaling stress tests (`m4_test_solver_performance.py`), and end-to-end App Team integration (`tests/m4_test_app_team_e2e_integration.py`).
 ---
 
 ## Running the Pipeline & Tests
